@@ -4,31 +4,31 @@
  */
 
 import UIKit
+import CoreData
 
 class ToDoListViewController: UITableViewController {
     
     //    var listArray = [String]()  //array to hold cell data (ToDos)
     var listArray = [Item]()       //change to have custom item so we can associate properties with it, in this case, the checkmark.  since we reuse cells, it appears in the reused cell if in top cell, so we want to be able to associate it with the data, not the cell.
+
+    
+    //1. To use COREDATA to store data, we reference a context in AppDelegate to add/save/load an Item
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
-    //1. To use NSCoder to store data, first create file path do .plist directory
-    //    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("ToDoListItems.plist")
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("ToDoListItems.plist")
+    
     
     //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
     override func viewDidLoad() {
         super.viewDidLoad()
         //since using TableViewController, no need to set self as delegate for TableViewDelegate and TableViewDataSource
         
-        //at the start, populate array to test things out
-        //listArray.append("test1"); listArray.append("test2"); listArray.append("test3")
-        var item1 = Item(); item1.title = "item1"
         
-        //        loadDataFromUserDefault()
-        print (dataFilePath)
-        loadItemsFromPList()
+        
+        //print (FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        loadItemsFromCoreData()
     }
-    //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooodf
+    //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
     
     
     
@@ -69,7 +69,10 @@ class ToDoListViewController: UITableViewController {
         //Toggle .done in Item (checkmark)
         listArray[indexPath.row].done = !listArray[indexPath.row].done  //replaces if/then below
         
-        saveItemsToPList()
+//        context.delete(listArray[indexPath.row])      //Used to show how to delete.
+//        listArray.remove(at: indexPath.row)       //<=must be after context.delete since this line changes the # of indexs
+
+        saveItemsToCoreData()
         
         
     }//end didSelectRowAt
@@ -91,13 +94,16 @@ class ToDoListViewController: UITableViewController {
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             if let userInput = textField.text {
-                var newItem = Item()
-                newItem.title = userInput
+//                var newItem = Item()          //replaced below with Item(<#T##NSManagedObjectContext#>)
+               
+                let newItem = Item(context: self.context)
+                newItem.title = userInput   //have to set all Attributes since no default values
+                newItem.done = false
                 
                 self.listArray.append(newItem)
                 self.tableView.reloadData()
-                //                self.saveDataToUserDefault()
-                self.saveItemsToPList()
+                self.saveItemsToCoreData()
+                
             }else {
                 print ("nothing entered")
             }//end if-else
@@ -112,39 +118,25 @@ class ToDoListViewController: UITableViewController {
     
     
     //MARK: - save data via NSCoder
-    func saveItemsToPList(){
-        let encoder = PropertyListEncoder()
+    func saveItemsToCoreData(){
         
         do{
-            let data = try encoder.encode(listArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
         }catch {
-            print ("Error encoding listArray: \(error)")
+            print("Error saving context: \(error)")
         }
         
         tableView.reloadData()
     }//end save data
     
     //MARK: - load data saved via NSCoder
-    func loadItemsFromPList(){
-        let decoder = PropertyListDecoder()
-        
-        //get data.  Data() may throw, try.  Angela showed a way to combine optional binding with try statement
-                if let data = try? Data(contentsOf: dataFilePath!){
-                    do {
-                        listArray = try decoder.decode([Item].self, from: data)
-                    }catch {
-                        print ("Error decoding listArray: \(error)")
-                    }
-                }//end optional binding
-        
-//        do {
-//            let data = try Data(contentsOf: dataFilePath!)
-//            listArray = try decoder.decode([Item].self, from: data)
-//        }catch{
-//            //print ("Error decoding listArray: \(error)")
-//        }
-        
+    func loadItemsFromCoreData(){
+        let request: NSFetchRequest <Item> = Item.fetchRequest()
+        do{
+            listArray = try context.fetch(request)
+        }catch{
+            print ("Error loading context: \(error)")
+        }
         
     }//end load data
     

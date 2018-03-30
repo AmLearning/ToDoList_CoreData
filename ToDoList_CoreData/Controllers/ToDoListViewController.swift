@@ -16,8 +16,6 @@ class ToDoListViewController: UITableViewController {
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
-    
-    
     //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,7 +24,7 @@ class ToDoListViewController: UITableViewController {
         
         
         //print (FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        loadItemsFromCoreData()
+        loadItems()
     }
     //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
     
@@ -72,7 +70,7 @@ class ToDoListViewController: UITableViewController {
 //        context.delete(listArray[indexPath.row])      //Used to show how to delete.
 //        listArray.remove(at: indexPath.row)       //<=must be after context.delete since this line changes the # of indexs
 
-        saveItemsToCoreData()
+        saveItems()
         
         
     }//end didSelectRowAt
@@ -102,7 +100,7 @@ class ToDoListViewController: UITableViewController {
                 
                 self.listArray.append(newItem)
                 self.tableView.reloadData()
-                self.saveItemsToCoreData()
+                self.saveItems()
                 
             }else {
                 print ("nothing entered")
@@ -116,9 +114,12 @@ class ToDoListViewController: UITableViewController {
     }//end addNewItem
     
     
+    //MARK: - SearchBar Delegate Methods:
+    
+    
     
     //MARK: - save data via NSCoder
-    func saveItemsToCoreData(){
+    func saveItems(){
         
         do{
             try context.save()
@@ -130,14 +131,14 @@ class ToDoListViewController: UITableViewController {
     }//end save data
     
     //MARK: - load data saved via NSCoder
-    func loadItemsFromCoreData(){
+    func loadItems(){
         let request: NSFetchRequest <Item> = Item.fetchRequest()
         do{
             listArray = try context.fetch(request)
         }catch{
             print ("Error loading context: \(error)")
         }
-        
+        tableView.reloadData()
     }//end load data
     
   
@@ -145,3 +146,48 @@ class ToDoListViewController: UITableViewController {
 }//end class
 
 
+//MARK: Search Bar Extension
+extension ToDoListViewController: UISearchBarDelegate{
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request: NSFetchRequest<Item> = Item.fetchRequest()     //<= same as when Loading Data
+        
+        //in order to QUERY and set FILTERS, must use NSPredicate:
+        let predicate = NSPredicate(format: "title CONTAINS [cd] %@", searchBar.text!)     //[cd] deactivates caps and diacritics
+        request.predicate = predicate
+        
+        let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)     //sets to sort in ascending order
+        request.sortDescriptors = [sortDescriptor]
+        //the avove two sets can be shortened:  (ex)request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        do{
+            listArray = try context.fetch(request)
+        }catch{
+            print ("Error loading context: \(error)")
+        }
+        
+        tableView.reloadData()
+/*Angela shortens the above by adding a parameter to the Load and calling it.  Also needs a defualt parameter (Item.FetchRequest) so that the call in ViewDidLoad can still work.
+         
+         eg: func loadItems(with request: NSFetchRequest<Item> = Item.FetchRequest){}
+        
+        When written like this, the 'with' is external (what is seen when calling the method) and the 'request' is internal--used in the method.  So, if a parm is provided, it is used.  If not and just called by loadItems(), will use default value.
+*/
+    }//end searchBarSearchButtonClicked
+    
+    //MARK: Make List Revert to ALL items
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text!.count == 0 {
+            loadItems()
+            
+            //to make the keyboard disappear, make it not 1st Responder need to first put in Main thread
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
+
+    }
+    
+    
+}//end UISearchBarDelegate Extension

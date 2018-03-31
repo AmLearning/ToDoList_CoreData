@@ -12,7 +12,7 @@
         <!--CategoryViewController-->
         <scene sceneID="C59-NB-fxt">
             <objects>
-                <tableViewController id="DZP-SI-htn" userLabel="CategoryViewController" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="CategoryViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="DZP-SI-htn" userLabel="CategoryViewController" customClass="CategoryTableViewController" customModule="ToDoList_CoreData" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="FXX-wL-36s">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -35,10 +35,13 @@
                     <navigationItem key="navigationItem" title="To Do List" id="ptG-iL-dbW">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="eZI-xR-3LG">
                             <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="addCategoryButtonTapped:" destination="DZP-SI-htn" id="54M-z4-jaI"/>
+                            </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <segue destination="6Nh-ad-I1T" kind="show" identifier="ToListVC" id="6MJ-z6-1t1"/>
+                        <segue destination="6Nh-ad-I1T" kind="show" identifier="ToItems" id="dlz-2t-bbE"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Jgj-V4-8e2" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -48,7 +51,7 @@
         <!--ToDoListViewController-->
         <scene sceneID="dPr-un-hJM">
             <objects>
-                <tableViewController storyboardIdentifier="To Do List View Controller" id="6Nh-ad-I1T" userLabel="ToDoListViewController" customClass="ToDoListViewController" customModule="ToDoList_CoreData" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="To Do List View Controller" useStoryboardIdentifierAsRestorationIdentifier="YES" id="6Nh-ad-I1T" userLabel="ToDoListViewController" customClass="ToDoListViewController" customModule="ToDoList_CoreData" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="uPe-tj-qEC">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

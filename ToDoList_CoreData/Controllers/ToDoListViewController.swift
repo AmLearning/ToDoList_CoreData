@@ -45,10 +45,6 @@ class ToDoListViewController: UITableViewController {
         }else {
             cell.accessoryType = .none
         }
-        //the above could be shortened by using ternary operator
-        //        item.done ? (cell.accessoryType = .checkmark) : (cell.accessoryType = .none)
-        //        or
-        //        cell.accessoryType = item.done ? .checkmark : .none
         
         return cell
     }//end cellForRowAt
@@ -65,10 +61,7 @@ class ToDoListViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)    //this makes highlight go away after clicking on cell
         
         //Toggle .done in Item (checkmark)
-        listArray[indexPath.row].done = !listArray[indexPath.row].done  //replaces if/then below
-        
-//        context.delete(listArray[indexPath.row])      //Used to show how to delete.
-//        listArray.remove(at: indexPath.row)       //<=must be after context.delete since this line changes the # of indexs
+        listArray[indexPath.row].done = !listArray[indexPath.row].done
 
         saveItems()
         
@@ -118,7 +111,7 @@ class ToDoListViewController: UITableViewController {
     
     
     
-    //MARK: - save data via NSCoder
+    //MARK: - save data via CoreData
     func saveItems(){
         
         do{
@@ -130,7 +123,7 @@ class ToDoListViewController: UITableViewController {
         tableView.reloadData()
     }//end save data
     
-    //MARK: - load data saved via NSCoder
+    //MARK: - load data saved via CoreData
     func loadItems(){
         let request: NSFetchRequest <Item> = Item.fetchRequest()
         do{
@@ -147,47 +140,49 @@ class ToDoListViewController: UITableViewController {
 
 
 //MARK: Search Bar Extension
-extension ToDoListViewController: UISearchBarDelegate{
-    
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        
-        let request: NSFetchRequest<Item> = Item.fetchRequest()     //<= same as when Loading Data
-        
-        //in order to QUERY and set FILTERS, must use NSPredicate:
-        let predicate = NSPredicate(format: "title CONTAINS [cd] %@", searchBar.text!)     //[cd] deactivates caps and diacritics
-        request.predicate = predicate
-        
-        let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)     //sets to sort in ascending order
-        request.sortDescriptors = [sortDescriptor]
-        //the avove two sets can be shortened:  (ex)request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-        
-        do{
-            listArray = try context.fetch(request)
-        }catch{
-            print ("Error loading context: \(error)")
-        }
-        
-        tableView.reloadData()
-/*Angela shortens the above by adding a parameter to the Load and calling it.  Also needs a defualt parameter (Item.FetchRequest) so that the call in ViewDidLoad can still work.
-         
-         eg: func loadItems(with request: NSFetchRequest<Item> = Item.FetchRequest){}
-        
-        When written like this, the 'with' is external (what is seen when calling the method) and the 'request' is internal--used in the method.  So, if a parm is provided, it is used.  If not and just called by loadItems(), will use default value.
-*/
-    }//end searchBarSearchButtonClicked
-    
-    //MARK: Make List Revert to ALL items
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        if searchBar.text!.count == 0 {
-            loadItems()
-            
-            //to make the keyboard disappear, make it not 1st Responder need to first put in Main thread
-            DispatchQueue.main.async {
-                searchBar.resignFirstResponder()
-            }
-        }
+//extension ToDoListViewController: UISearchBarDelegate{
+//
+//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+//
+//        let request: NSFetchRequest<Item> = Item.fetchRequest()     //<= same as when Loading Data
+//
+//        //in order to QUERY and set FILTERS, must use NSPredicate:
+//        let predicate = NSPredicate(format: "title CONTAINS [cd] %@", searchBar.text!)     //[cd] deactivates caps and diacritics
+//        request.predicate = predicate
+//
+//        let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)     //sets to sort in ascending order
+//        request.sortDescriptors = [sortDescriptor]
+//        //the avove two sets can be shortened:  (ex)request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+//
+//        do{
+//            listArray = try context.fetch(request)
+//        }catch{
+//            print ("Error loading context: \(error)")
+//        }
+//        
+//        tableView.reloadData()
 
-    }
-    
-    
-}//end UISearchBarDelegate Extension
+///*Angela shortens the above by adding a parameter to the Load and calling it.  Also needs a defualt parameter (Item.FetchRequest) so that the call in ViewDidLoad can still work.
+//
+//         eg: func loadItems(with request: NSFetchRequest<Item> = Item.FetchRequest){}
+//
+//        When written like this, the 'with' is external (what is seen when calling the method) and the 'request' is internal--used in the method.  So, if a parm is provided, it is used.  If not and just called by loadItems(), will use default value.
+//*/
+//    }//end searchBarSearchButtonClicked
+//
+//    //MARK: Make List Revert to ALL items
+//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+//        if searchBar.text!.count == 0 {
+//            loadItems()
+//
+//            //to make the keyboard disappear, make it not 1st Responder need to first put in Main thread
+//            DispatchQueue.main.async {
+//                searchBar.resignFirstResponder()
+//            }
+//        }
+//
+//    }
+//
+//
+//}//end UISearchBarDelegate Extension
+

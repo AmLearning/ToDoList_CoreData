@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class CategoryTableViewController: UITableViewController {
+class CategoryViewController: UITableViewController {
     
     //MARK: - Class Properties
     var categoryArray = [Category]()
@@ -22,10 +22,11 @@ class CategoryTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let grocery = Category(context: self.context) ; let errands = Category(context: self.context); let misc = Category(context: self.context)
-        grocery.name = "grocery"; errands.name = "errands"; misc.name = "misc"
-        categoryArray.append(grocery); categoryArray.append(errands); categoryArray.append(misc)
-
+//        let grocery = Category(context: self.context) ; let errands = Category(context: self.context); let misc = Category(context: self.context)
+//        grocery.name = "grocery"; errands.name = "errands"; misc.name = "misc"
+//        categoryArray.append(grocery); categoryArray.append(errands); categoryArray.append(misc)
+        
+        loadCategories()
     }
     //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
@@ -52,13 +53,28 @@ class CategoryTableViewController: UITableViewController {
     
     //MARK: - TableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
         
-        //if cell selected, 
-    }
+        //if cell selected,go to Item VC
+        performSegue(withIdentifier: "ToItems", sender: self)
+        
+        tableView.deselectRow(at: indexPath, animated: true)//make highlight disappear
+        
+    }//end didSelectRowAt
+    
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let destinationVC = segue.destination as! ToDoListViewController
+        
+        if let indexPath = tableView.indexPathForSelectedRow {   //this is how you get indexPath when not in didSelectRowAt()
+           //if segue.identifier == "ToItems" {
+                destinationVC.selectedCategory = categoryArray[indexPath.row]
+           // }
+        }
+    }//end prepare for Segue
+    
   
 
-    //MARK: - @IBAction
+    //MARK: - @IBAction and results
 
     @IBAction func addCategoryButtonTapped(_ sender: UIBarButtonItem) {
         addNewCategory()
@@ -81,16 +97,19 @@ class CategoryTableViewController: UITableViewController {
                 
                 self.categoryArray.append(newCategory)
                 self.tableView.reloadData()
-                self.saveItems()
+                self.saveCategories()
             }//end if
         }//end action
         
         alert.addAction(action)
         self.present(alert, animated: true, completion: nil)
-    }
+    }//end add new category
+    
+    
+    
     
     //MARK: - save data via CoreData
-    func saveItems(){
+    func saveCategories(){
         
         do{
             try context.save()
@@ -102,15 +121,17 @@ class CategoryTableViewController: UITableViewController {
     }//end save data
     
     //MARK: - load data saved via CoreData
-    func loadItems(){
+    func loadCategories(){
         let request: NSFetchRequest <Category> = Category.fetchRequest()
         do{
-            categoryArray = try context.fetch(request)
+                categoryArray = try context.fetch(request)
         }catch{
             print ("Error loading context: \(error)")
         }
+        
         tableView.reloadData()
     }//end load data
+    
     
 
 }

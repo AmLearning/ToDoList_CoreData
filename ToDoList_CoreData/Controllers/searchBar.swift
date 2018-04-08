@@ -19,13 +19,13 @@ extension ToDoListViewController: UISearchBarDelegate{
         //in order to QUERY and set FILTERS, must use NSPredicate:
         let predicate = NSPredicate(format: "title CONTAINS [cd] %@", searchBar.text!)     //[cd] deactivates caps and diacritics
         request.predicate = predicate
-        
+
         let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)     //sets to sort in ascending order
         request.sortDescriptors = [sortDescriptor]
         //the avove two sets can be shortened:  (ex)request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
         do{
-            listArray = try context.fetch(request)
+            itemArray = try context.fetch(request)
         }catch{
             print ("Error loading context: \(error)")
         }

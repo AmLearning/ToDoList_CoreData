@@ -9,22 +9,28 @@ import CoreData
 class ToDoListViewController: UITableViewController {
     
     //    var listArray = [String]()  //array to hold cell data (ToDos)
-    var listArray = [Item]()       //change to have custom item so we can associate properties with it, in this case, the checkmark.  since we reuse cells, it appears in the reused cell if in top cell, so we want to be able to associate it with the data, not the cell.
-
+    var itemArray = [Item]()       //change to have custom item so we can associate properties with it, in this case, the checkmark.  since we reuse cells, it appears in the reused cell if in top cell, so we want to be able to associate it with the data, not the cell.
+    
+    
+    //Property observer didSet triggers only if the value of selectedCategory was set. Since this property is called from CategoryVC's prepare for segue, it happens first.  So, we put loadItems here instead of viewDidLoad which ensure that it only loads if selectedCategory received an update.
+    var selectedCategory : Category? {//optional because initially, until a category in CategoryVC is used, this is nil.
+        didSet {
+//            print ("ITEM ARRAY:  \(itemArray.count)")
+            loadItems()
+        }
+    }
     
     //1. To use COREDATA to store data, we reference a context in AppDelegate to add/save/load an Item
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
-    
+   
     //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
     override func viewDidLoad() {
         super.viewDidLoad()
         //since using TableViewController, no need to set self as delegate for TableViewDelegate and TableViewDataSource
         
-        
-        
-        //print (FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        loadItems()
+//        print (FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+//        loadItems()   //moved to didSet observer.
     }
     //oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
     
@@ -35,7 +41,7 @@ class ToDoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         //Here, we cast to the CustomMessageCell type because using the custom cell....since default prototype, no cast as in Chat.
         let cell = tableView.dequeueReusableCell(withIdentifier: "ListCell", for: indexPath)
-        let item = listArray[indexPath.row]
+        let item = itemArray[indexPath.row]
         
         cell.textLabel?.text = item.title
         
@@ -51,7 +57,7 @@ class ToDoListViewController: UITableViewController {
     
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return listArray.count
+        return itemArray.count
     }
     
     
@@ -61,7 +67,7 @@ class ToDoListViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)    //this makes highlight go away after clicking on cell
         
         //Toggle .done in Item (checkmark)
-        listArray[indexPath.row].done = !listArray[indexPath.row].done
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
 
         saveItems()
         
@@ -88,10 +94,11 @@ class ToDoListViewController: UITableViewController {
 //                var newItem = Item()          //replaced below with Item(<#T##NSManagedObjectContext#>)
                
                 let newItem = Item(context: self.context)
-                newItem.title = userInput   //have to set all Attributes since no default values
+                newItem.title = userInput   //have to set all Attributes since no default values when using CoreData
                 newItem.done = false
+                newItem.withParentCategory = self.selectedCategory  //associates the item with the category selected to get here.  .withParentCategory is the RELATIONSHIP establisehd in CoreData file.
                 
-                self.listArray.append(newItem)
+                self.itemArray.append(newItem)
                 self.tableView.reloadData()
                 self.saveItems()
                 
@@ -125,12 +132,15 @@ class ToDoListViewController: UITableViewController {
     
     //MARK: - load data saved via CoreData
     func loadItems(){
+        
         let request: NSFetchRequest <Item> = Item.fetchRequest()
         do{
-            listArray = try context.fetch(request)
+            itemArray = try context.fetch(request)
         }catch{
             print ("Error loading context: \(error)")
         }
+        
+        
         tableView.reloadData()
     }//end load data
     

@@ -12,14 +12,18 @@ import CoreData
 
 extension ToDoListViewController: UISearchBarDelegate{
     
-        func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         
         let request: NSFetchRequest<Item> = Item.fetchRequest()     //<= same as when Loading Data
         
-        //in order to QUERY and set FILTERS, must use NSPredicate:
-        let predicate = NSPredicate(format: "title CONTAINS [cd] %@", searchBar.text!)     //[cd] deactivates caps and diacritics
+        //in order to QUERY and set FILTERS, must use NSPredicate:          //%@ means value of searchBar.text goes here.
+//        let predicate = NSPredicate(format: "title CONTAINS [cd] %@", searchBar.text!)     //[cd] deactivates caps and diacritics
+        let predicate = NSPredicate(format: "(withParentCategory.name MATCHES %@) AND (title CONTAINS [cd] %@)", (selectedCategory?.name)!, searchBar.text!)
         request.predicate = predicate
-
+        //NOTE:  Angela uses NSCompound Predicate (SECTION 19, LECTURE 260)
+        
+        
         let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)     //sets to sort in ascending order
         request.sortDescriptors = [sortDescriptor]
         //the avove two sets can be shortened:  (ex)request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
@@ -39,6 +43,8 @@ extension ToDoListViewController: UISearchBarDelegate{
          */
     }//end searchBarSearchButtonClicked
     
+    
+    
     //MARK: Make List Revert to ALL items
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchBar.text!.count == 0 {
@@ -49,7 +55,7 @@ extension ToDoListViewController: UISearchBarDelegate{
                 searchBar.resignFirstResponder()
             }
         }else { //This a suggestion from student.  Makes search update each time a new letter is typed.
-            searchBarSearchButtonClicked(searchBar)
+//            searchBarSearchButtonClicked(searchBar)
         }
         
     }

@@ -15,7 +15,6 @@ class ToDoListViewController: UITableViewController {
     //Property observer didSet triggers only if the value of selectedCategory was set. Since this property is called from CategoryVC's prepare for segue, it happens first.  So, we put loadItems here instead of viewDidLoad which ensure that it only loads if selectedCategory received an update.
     var selectedCategory : Category? {//optional because initially, until a category in CategoryVC is used, this is nil.
         didSet {
-//            print ("ITEM ARRAY:  \(itemArray.count)")
             loadItems()
         }
     }
@@ -118,7 +117,7 @@ class ToDoListViewController: UITableViewController {
     
     
     
-    //MARK: - save data via CoreData
+    //MARK: - SAVE data via CoreData
     func saveItems(){
         
         do{
@@ -130,10 +129,21 @@ class ToDoListViewController: UITableViewController {
         tableView.reloadData()
     }//end save data
     
-    //MARK: - load data saved via CoreData
+    
+    
+    //MARK: - LOAD data saved via CoreData
     func loadItems(){
         
         let request: NSFetchRequest <Item> = Item.fetchRequest()
+        
+//      this part is to sort through data and only load items in selectedCategory
+        if let category = selectedCategory {
+            let loadPredicate = NSPredicate(format: "withParentCategory.name MATCHES %@", category.name!)
+            request.predicate = loadPredicate
+        
+            request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        }//end optional binding
+    
         do{
             itemArray = try context.fetch(request)
         }catch{
@@ -148,6 +158,11 @@ class ToDoListViewController: UITableViewController {
     
 }//end class
 
+
+
+
+
+//THIS WAS MOVED TO OWN FILE
 
 //MARK: Search Bar Extension
 //extension ToDoListViewController: UISearchBarDelegate{
